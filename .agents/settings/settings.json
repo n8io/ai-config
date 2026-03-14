@@ -35,6 +35,17 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/session-start.sh",
+            "timeout": 30
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
