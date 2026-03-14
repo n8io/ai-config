@@ -2,10 +2,10 @@
   "topic": "rules",
   "files": [
     {
-      "src": "base.md",
+      "src": "AGENTS.md",
       "targets": {
         "claude": "~/.claude/CLAUDE.md",
-        "cursor": "~/.cursor/rules/base.md"
+        "cursor": "~/.cursor/rules/AGENTS.md"
       }
     }
   ]

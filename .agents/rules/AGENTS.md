@@ -10,3 +10,4 @@ Always prefer these faster alternatives in shell commands:
 - `jaq` instead of `jq`
 - `fnm` instead of `nvm`
 - `pnpm` instead of `npm`
+- `bun` instead of `pnpm`
