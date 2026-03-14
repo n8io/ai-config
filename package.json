@@ -1,0 +1,27 @@
+{
+  "name": "@n8io/ai-config",
+  "version": "0.1.0",
+  "description": "Provider-agnostic AI coding assistant config installer",
+  "type": "module",
+  "bin": {
+    "ai-config": "./dist/cli.js"
+  },
+  "scripts": {
+    "cli": "bun cli/index.ts",
+    "build": "bun build cli/index.ts --outfile dist/cli.js --target node --sourcemap",
+    "test": "bun test",
+    "test:node": "node dist/cli.js --help"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.9.0",
+    "citty": "^0.1.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist/",
+    ".agents/"
+  ]
+}
