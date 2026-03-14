@@ -1,0 +1,13 @@
+{
+  "topic": "agents",
+  "description": "Shared Claude Code subagents (code-style-alphasort, etc.)",
+  "files": [
+    {
+      "src": "code-style-alphasort.md",
+      "targets": {
+        "claude": "~/.claude/agents/code-style-alphasort.md",
+        "cursor": null
+      }
+    }
+  ]
+}
