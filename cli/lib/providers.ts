@@ -7,21 +7,16 @@ export const KNOWN_PROVIDERS: Provider[] = [
     id: 'claude',
     name: 'Claude Code',
     configDir: '.claude',
+    detectionPath: '.claude/settings.json',  // file: bare .claude dir isn't enough
   },
   {
     id: 'cursor',
     name: 'Cursor',
     configDir: '.cursor',
+    detectionPath: '.cursor',  // directory presence is sufficient
   },
 ]
 
-function getDetectionPath(provider: Provider, homeDir: string): string {
-  if (provider.id === 'claude') {
-    return join(homeDir, '.claude', 'settings.json')
-  }
-  return join(homeDir, provider.configDir)
-}
-
 export function detectProviders(homeDir: string): Provider[] {
-  return KNOWN_PROVIDERS.filter(p => existsSync(getDetectionPath(p, homeDir)))
+  return KNOWN_PROVIDERS.filter(p => existsSync(join(homeDir, p.detectionPath)))
 }

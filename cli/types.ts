@@ -14,6 +14,7 @@ export interface Provider {
   id: ProviderId
   name: string
   configDir: string
+  detectionPath: string  // relative to homeDir; what must exist for this provider to be detected
 }
 
 export type ConflictAction = 'skip' | 'overwrite' | 'backup' | 'diff'
