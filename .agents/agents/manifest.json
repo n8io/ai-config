@@ -8,6 +8,13 @@
         "claude": "~/.claude/agents/code-style-alphasort.md",
         "cursor": null
       }
+    },
+    {
+      "src": "pr-title.md",
+      "targets": {
+        "claude": "~/.claude/agents/pr-title.md",
+        "cursor": null
+      }
     }
   ]
 }
