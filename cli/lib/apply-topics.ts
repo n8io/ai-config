@@ -1,5 +1,5 @@
 import { copyFileSync, unlinkSync } from 'fs'
-import { select, isCancel, log } from '@clack/prompts'
+import { select, confirm, isCancel, log } from '@clack/prompts'
 import { spawnSync } from 'child_process'
 import { planSymlink, applySymlink } from './symlink'
 import { resolveTarget } from './paths'
@@ -12,7 +12,7 @@ function makeBackupPath(target: string): string {
 
 function backupAndLink(src: string, target: string): string {
   const backupPath = makeBackupPath(target)
-  try { copyFileSync(target, backupPath) } catch { /* target may not exist */ }
+  copyFileSync(target, backupPath)
   try { unlinkSync(target) } catch { /* ignore ENOENT */ }
   applySymlink(src, target)
   return backupPath
@@ -119,7 +119,6 @@ export async function applyTopics(
 
         if (action === 'diff') {
           spawnSync('diff', [target, src], { stdio: 'inherit' })
-          const { confirm } = await import('@clack/prompts')
           const ok = await confirm({ message: 'Overwrite?' })
           if (isCancel(ok) || !ok) {
             results.push({ status: 'skipped', src, target, topic: manifest.topic, provider: provider.id })

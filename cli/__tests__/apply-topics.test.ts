@@ -148,6 +148,27 @@ describe('applyTopics — conflictStrategy: backup', () => {
   })
 })
 
+describe('applyTopics — conflictStrategy: overwrite', () => {
+  it('overwrites existing file without backup', async () => {
+    const src = srcFile()
+    const targetDir = join(tmp, 'home', '.claude')
+    mkdirSync(targetDir, { recursive: true })
+    const target = join(targetDir, 'AGENTS.md')
+    writeFileSync(target, 'existing content')
+
+    const results = await applyTopics(
+      [manifest(target)],
+      [provider],
+      repoDir(),
+      { dryRun: false, verbose: false, conflictStrategy: 'overwrite' }
+    )
+    expect(results[0].status).toBe('linked')
+    expect(results[0].record).toBeDefined()
+    expect(results[0].backupPath).toBeUndefined()
+    expect(readlinkSync(target)).toBe(src)
+  })
+})
+
 describe('applyTopics — directory source', () => {
   it('creates symlink for directory src', async () => {
     // applyTopics looks for: join(repoDir, '.agents', topic, src)
