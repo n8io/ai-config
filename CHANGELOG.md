@@ -1,5 +1,11 @@
 # @n8io/ai-config
 
+## 0.5.1
+
+### Patch Changes
+
+- 4a56e3d: Add generated files to .gitignore to prevent source controlling build artifacts and cache directories
+
 ## 0.5.0
 
 ### Minor Changes
