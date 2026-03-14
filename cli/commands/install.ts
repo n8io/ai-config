@@ -1,41 +1,41 @@
 import { defineCommand } from 'citty'
-import { intro, outro, log, select, confirm, isCancel } from '@clack/prompts'
-import { join, resolve } from 'path'
-import { existsSync, lstatSync, readFileSync, copyFileSync, unlinkSync } from 'fs'
+import { intro, outro, log } from '@clack/prompts'
+import { join } from 'path'
+import { existsSync } from 'fs'
 import { loadManifests } from '../lib/manifest'
 import { detectProviders, KNOWN_PROVIDERS } from '../lib/providers'
-import { planSymlink, applySymlink } from '../lib/symlink'
-import { resolveTarget } from '../lib/paths'
+import { applyTopics } from '../lib/apply-topics'
 import { writeSyncCache } from '../lib/cache'
 import { readInstallManifest, writeInstallManifest } from '../lib/install-manifest'
 import { HOME, DEFAULT_REPO_DIR, isLocalDevMode, getRepoDir } from '../lib/env'
-import type { Provider, InstallRecord } from '../types'
+import type { Provider } from '../types'
 
 export const installCommand = defineCommand({
   meta: { name: 'install', description: 'Install AI config via symlinks' },
   args: {
     provider: { type: 'string', description: 'Target a specific provider (claude, cursor)', default: '' },
     'dry-run': { type: 'boolean', description: 'Preview changes without applying', default: false },
+    yes: { type: 'boolean', description: 'Skip conflict prompts (use safe defaults)', default: false },
+    verbose: { type: 'boolean', description: 'Show all symlink operations including skipped', default: false },
   },
   async run({ args, rawArgs }) {
     const isDryRun = args['dry-run']
-    const isInteractive = process.stdin.isTTY && !isDryRun
+    const isYes = args['yes']
+    const isVerbose = args['verbose']
     const repoDir = getRepoDir()
     const agentsDir = join(repoDir, '.agents')
-    // State files live inside the repo dir (works for both local dev and ~/.ai-config)
     const syncCachePath = join(repoDir, '.sync-cache')
     const installManifestPath = join(repoDir, '.install-manifest.json')
 
     intro('ai-config install')
 
-    // Bootstrap: ensure repo is present (clone if needed)
+    // Bootstrap
     if (!isLocalDevMode()) {
       if (existsSync(DEFAULT_REPO_DIR)) {
         if (!existsSync(join(DEFAULT_REPO_DIR, '.git'))) {
           log.error(`${DEFAULT_REPO_DIR} exists but is not a git repository. Remove it and re-run.`)
           process.exit(1)
         }
-        // Already cloned — use existing
       } else {
         log.step(`Cloning ai-config repo to ${DEFAULT_REPO_DIR}...`)
         const { cloneRepo } = await import('../lib/repo')
@@ -72,117 +72,50 @@ export const installCommand = defineCommand({
       }
     }
 
-    // Filter topics from rawArgs (positional args after the subcommand name).
-    // Skip flags (--dry-run) and their values (value immediately after --provider).
+    // Parse requested topics from positional args
     const requestedTopics = rawArgs.filter((a, i, arr) => {
       if (a.startsWith('-')) return false
-      if (arr[i - 1] === '--provider') return false  // skip --provider's value
+      if (arr[i - 1] === '--provider') return false
       return true
     })
 
-    // Load manifests
-    const manifests = loadManifests(agentsDir)
-    const filteredManifests = requestedTopics.length > 0
-      ? manifests.filter(m => requestedTopics.includes(m.topic))
-      : manifests
+    // Load and filter manifests
+    const allManifests = loadManifests(agentsDir)
+    const knownTopics = allManifests.map(m => m.topic)
 
-    const installedRecords: InstallRecord[] = []
-
-    for (const manifest of filteredManifests) {
-      const topicDir = join(agentsDir, manifest.topic)
-      for (const file of manifest.files) {
-        for (const provider of providers) {
-          const targetTemplate = file.targets[provider.id]
-          if (!targetTemplate) continue
-
-          const src = resolve(topicDir, file.src)
-          const target = resolveTarget(targetTemplate)
-          const plan = planSymlink(src, target, repoDir)
-
-          if (plan.status === 'skip-already-linked' || plan.status === 'skip-null') {
-            log.info(`  skip  ${target}`)
-            continue
-          }
-
-          if (plan.status === 'create') {
-            if (isDryRun) {
-              log.info(`  would create  ${target} → ${src}`)
-              continue
-            }
-            try {
-              applySymlink(src, target)
-              log.success(`  linked  ${target}`)
-              installedRecords.push({ symlinkPath: target, sourcePath: src, installedAt: new Date().toISOString() })
-            } catch (err) {
-              log.error(`  failed  ${target}: ${(err as Error).message}`)
-            }
-            continue
-          }
-
-          // Conflict
-          if (isDryRun) {
-            log.warn(`  conflict  ${target} (already exists)`)
-            continue
-          }
-
-          if (!isInteractive) {
-            log.warn(`  skip (conflict)  ${target} — already exists, resolve manually`)
-            continue
-          }
-
-          const action = await select({
-            message: `${target} already exists`,
-            options: [
-              { value: 'skip', label: 'Skip' },
-              { value: 'overwrite', label: 'Overwrite' },
-              { value: 'backup', label: 'Backup & replace' },
-              { value: 'diff', label: 'Show diff (then decide)' },
-            ],
-          })
-
-          if (isCancel(action)) { outro('Cancelled'); process.exit(0) }
-
-          if (action === 'skip') { log.info(`  skipped  ${target}`); continue }
-
-          if (action === 'diff') {
-            const { spawnSync } = await import('child_process')
-            spawnSync('diff', [target, src], { stdio: 'inherit' })
-            const confirm2 = await confirm({ message: 'Overwrite?' })
-            if (isCancel(confirm2) || !confirm2) { log.info(`  skipped  ${target}`); continue }
-          }
-
-          let backupPath: string | undefined
-          if (action === 'backup' || action === 'diff') {
-            backupPath = `${target}.bak.${new Date().toISOString().replace(/[:.]/g, '-')}`
-            try { lstatSync(target) } catch { backupPath = undefined }
-            if (backupPath) copyFileSync(target, backupPath)
-          }
-
-          try {
-            try {
-              unlinkSync(target)
-            } catch (err) {
-              if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
-            }
-            applySymlink(src, target)
-            log.success(`  linked  ${target}${backupPath ? ` (backup: ${backupPath})` : ''}`)
-            installedRecords.push({
-              symlinkPath: target,
-              sourcePath: src,
-              backupPath,
-              installedAt: new Date().toISOString(),
-            })
-          } catch (err) {
-            log.error(`  failed  ${target}: ${(err as Error).message}${backupPath ? ` (backup at ${backupPath})` : ''}`)
-          }
+    let manifests = allManifests
+    if (requestedTopics.length > 0) {
+      for (const t of requestedTopics) {
+        if (!knownTopics.includes(t)) {
+          log.warn(`No manifest found for topic "${t}". Available: ${knownTopics.join(', ')}`)
         }
       }
+      manifests = allManifests.filter(m => requestedTopics.includes(m.topic))
     }
 
-    if (!isDryRun && installedRecords.length > 0) {
-      const existing = readInstallManifest(installManifestPath)
-      writeInstallManifest(installManifestPath, { records: [...existing.records, ...installedRecords] })
-      writeSyncCache(syncCachePath, new Date().toISOString())
+    const conflictStrategy = isDryRun ? 'skip' : isYes ? 'skip' : 'ask'
+    const results = await applyTopics(manifests, providers, repoDir, {
+      dryRun: isDryRun,
+      verbose: isVerbose,
+      conflictStrategy,
+    })
+
+    for (const r of results) {
+      if (r.status === 'linked') log.success(`  linked  ${r.target}`)
+      else if (r.status === 'backed-up') log.success(`  linked  ${r.target}  (backup: ${r.backupPath})`)
+      else if (r.status === 'would-create') log.info(`  would create  ${r.target} → ${r.src}`)
+      else if (r.status === 'would-conflict') log.warn(`  conflict  ${r.target}  (already exists)`)
+      else if (r.status === 'error') log.error(`  failed  ${r.target}: ${r.error}`)
+      else if (r.status === 'skipped' && isVerbose && r.target) log.info(`  skip  ${r.target}`)
+    }
+
+    if (!isDryRun) {
+      const newRecords = results.filter(r => r.record).map(r => r.record!)
+      if (newRecords.length > 0) {
+        const existing = readInstallManifest(installManifestPath)
+        writeInstallManifest(installManifestPath, { records: [...existing.records, ...newRecords] })
+        writeSyncCache(syncCachePath, new Date().toISOString())
+      }
     }
 
     outro(isDryRun ? 'Dry run complete' : 'Install complete')
