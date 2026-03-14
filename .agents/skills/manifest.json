@@ -1,11 +1,18 @@
 {
   "topic": "skills",
-  "description": "Shared slash commands (commit, etc.)",
+  "description": "Shared slash commands (commit, jira, etc.)",
   "files": [
     {
       "src": "commit",
       "targets": {
         "claude": "~/.claude/skills/commit",
+        "cursor": null
+      }
+    },
+    {
+      "src": "jira",
+      "targets": {
+        "claude": "~/.claude/skills/jira",
         "cursor": null
       }
     }
