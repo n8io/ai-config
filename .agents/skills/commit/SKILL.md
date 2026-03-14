@@ -17,7 +17,7 @@ Branch:
 
 ---
 
-Generate a commit message for the staged changes above following this format exactly:
+Generate a commit message in the imperative in the following format exactly:
 
 ```
 <type>(<ticket>): <gitmoji> <Subject line in sentence case>
