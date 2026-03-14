@@ -1,0 +1,12 @@
+{
+  "topic": "settings",
+  "files": [
+    {
+      "src": "settings.json",
+      "targets": {
+        "claude": "~/.claude/settings.json",
+        "cursor": null
+      }
+    }
+  ]
+}

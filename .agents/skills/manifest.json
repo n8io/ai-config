@@ -1,0 +1,12 @@
+{
+  "topic": "skills",
+  "files": [
+    {
+      "src": "commit",
+      "targets": {
+        "claude": "~/.claude/skills/commit",
+        "cursor": null
+      }
+    }
+  ]
+}

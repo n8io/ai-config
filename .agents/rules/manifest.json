@@ -1,0 +1,12 @@
+{
+  "topic": "rules",
+  "files": [
+    {
+      "src": "base.md",
+      "targets": {
+        "claude": "~/.claude/CLAUDE.md",
+        "cursor": "~/.cursor/rules/base.md"
+      }
+    }
+  ]
+}
