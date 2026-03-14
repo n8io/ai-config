@@ -72,6 +72,16 @@ describe('loadManifest', () => {
     }))
     expect(() => loadManifest(dir)).toThrow(/targets/)
   })
+
+  it('throws if a file entry target value is not string or null', () => {
+    const dir = join(tmp, 'bad5')
+    mkdirSync(dir)
+    writeFileSync(join(dir, 'manifest.json'), JSON.stringify({
+      topic: 'hooks',
+      files: [{ src: 'x.sh', targets: { claude: 123 } }]
+    }))
+    expect(() => loadManifest(dir)).toThrow(/targets\.claude/)
+  })
 })
 
 describe('loadManifests', () => {

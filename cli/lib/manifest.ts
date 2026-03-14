@@ -26,6 +26,11 @@ export function loadManifest(topicDir: string): Manifest {
     if (!f.targets || typeof f.targets !== 'object' || Array.isArray(f.targets)) {
       throw new Error(`Manifest at ${manifestPath}: files[].targets must be an object`)
     }
+    for (const [key, value] of Object.entries(f.targets as Record<string, unknown>)) {
+      if (value !== null && typeof value !== 'string') {
+        throw new Error(`Manifest at ${manifestPath}: files[].targets.${key} must be string or null, got ${typeof value}`)
+      }
+    }
   }
 
   return obj as Manifest
