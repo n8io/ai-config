@@ -1,4 +1,4 @@
-import { createRequire } from "node:module";
+#!/usr/bin/env node
 var __create = Object.create;
 var __getProtoOf = Object.getPrototypeOf;
 var __defProp = Object.defineProperty;
@@ -44,7 +44,6 @@ var __export = (target, all) => {
     });
 };
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
-var __require = /* @__PURE__ */ createRequire(import.meta.url);
 
 // node_modules/consola/dist/chunks/prompt.mjs
 var exports_prompt = {};
@@ -939,14 +938,14 @@ __export(exports_repo, {
   cloneRepo: () => cloneRepo,
   GitError: () => GitError
 });
-import { spawnSync } from "child_process";
+import { spawnSync as spawnSync2 } from "child_process";
 import { existsSync as existsSync4 } from "fs";
-import { join as join4 } from "path";
+import { join as join5 } from "path";
 function isGitRepo(dir) {
-  return existsSync4(join4(dir, ".git"));
+  return existsSync4(join5(dir, ".git"));
 }
 function cloneRepo(destDir) {
-  const result = spawnSync("git", ["clone", REPO_URL, destDir], {
+  const result = spawnSync2("git", ["clone", REPO_URL, destDir], {
     encoding: "utf-8"
   });
   if (result.error) {
@@ -957,7 +956,7 @@ function cloneRepo(destDir) {
   }
 }
 function pullRepo(repoDir) {
-  const result = spawnSync("git", ["pull", "origin", "main"], {
+  const result = spawnSync2("git", ["pull", "origin", "main"], {
     cwd: repoDir,
     encoding: "utf-8"
   });
@@ -2737,6 +2736,41 @@ class fD2 extends x2 {
     });
   }
 }
+var bD2 = Object.defineProperty;
+var mD2 = (t2, u3, F3) => (u3 in t2) ? bD2(t2, u3, { enumerable: true, configurable: true, writable: true, value: F3 }) : t2[u3] = F3;
+var Y2 = (t2, u3, F3) => (mD2(t2, typeof u3 != "symbol" ? u3 + "" : u3, F3), F3);
+var wD2 = class extends x2 {
+  constructor(u3) {
+    super(u3, false), Y2(this, "options"), Y2(this, "cursor", 0), this.options = u3.options, this.value = [...u3.initialValues ?? []], this.cursor = Math.max(this.options.findIndex(({ value: F3 }) => F3 === u3.cursorAt), 0), this.on("key", (F3) => {
+      F3 === "a" && this.toggleAll();
+    }), this.on("cursor", (F3) => {
+      switch (F3) {
+        case "left":
+        case "up":
+          this.cursor = this.cursor === 0 ? this.options.length - 1 : this.cursor - 1;
+          break;
+        case "down":
+        case "right":
+          this.cursor = this.cursor === this.options.length - 1 ? 0 : this.cursor + 1;
+          break;
+        case "space":
+          this.toggleValue();
+          break;
+      }
+    });
+  }
+  get _value() {
+    return this.options[this.cursor].value;
+  }
+  toggleAll() {
+    const u3 = this.value.length === this.options.length;
+    this.value = u3 ? [] : this.options.map((F3) => F3.value);
+  }
+  toggleValue() {
+    const u3 = this.value.includes(this._value);
+    this.value = u3 ? this.value.filter((F3) => F3 !== this._value) : [...this.value, this._value];
+  }
+};
 var SD2 = Object.defineProperty;
 var $D2 = (t2, u3, F3) => (u3 in t2) ? SD2(t2, u3, { enumerable: true, configurable: true, writable: true, value: F3 }) : t2[u3] = F3;
 var q2 = (t2, u3, F3) => ($D2(t2, typeof u3 != "symbol" ? u3 + "" : u3, F3), F3);
@@ -2869,6 +2903,47 @@ ${import_picocolors.default.cyan(m3)}
     }
   } }).prompt();
 };
+var pe = (s2) => {
+  const n2 = (t2, i2) => {
+    const r4 = t2.label ?? String(t2.value);
+    return i2 === "active" ? `${import_picocolors.default.cyan(V3)} ${r4} ${t2.hint ? import_picocolors.default.dim(`(${t2.hint})`) : ""}` : i2 === "selected" ? `${import_picocolors.default.green(M2)} ${import_picocolors.default.dim(r4)}` : i2 === "cancelled" ? `${import_picocolors.default.strikethrough(import_picocolors.default.dim(r4))}` : i2 === "active-selected" ? `${import_picocolors.default.green(M2)} ${r4} ${t2.hint ? import_picocolors.default.dim(`(${t2.hint})`) : ""}` : i2 === "submitted" ? `${import_picocolors.default.dim(r4)}` : `${import_picocolors.default.dim(G4)} ${import_picocolors.default.dim(r4)}`;
+  };
+  return new wD2({ options: s2.options, initialValues: s2.initialValues, required: s2.required ?? true, cursorAt: s2.cursorAt, validate(t2) {
+    if (this.required && t2.length === 0)
+      return `Please select at least one option.
+${import_picocolors.default.reset(import_picocolors.default.dim(`Press ${import_picocolors.default.gray(import_picocolors.default.bgWhite(import_picocolors.default.inverse(" space ")))} to select, ${import_picocolors.default.gray(import_picocolors.default.bgWhite(import_picocolors.default.inverse(" enter ")))} to submit`))}`;
+  }, render() {
+    const t2 = `${import_picocolors.default.gray(a2)}
+${y4(this.state)}  ${s2.message}
+`, i2 = (r4, c4) => {
+      const o3 = this.value.includes(r4.value);
+      return c4 && o3 ? n2(r4, "active-selected") : o3 ? n2(r4, "selected") : n2(r4, c4 ? "active" : "inactive");
+    };
+    switch (this.state) {
+      case "submit":
+        return `${t2}${import_picocolors.default.gray(a2)}  ${this.options.filter(({ value: r4 }) => this.value.includes(r4)).map((r4) => n2(r4, "submitted")).join(import_picocolors.default.dim(", ")) || import_picocolors.default.dim("none")}`;
+      case "cancel": {
+        const r4 = this.options.filter(({ value: c4 }) => this.value.includes(c4)).map((c4) => n2(c4, "cancelled")).join(import_picocolors.default.dim(", "));
+        return `${t2}${import_picocolors.default.gray(a2)}  ${r4.trim() ? `${r4}
+${import_picocolors.default.gray(a2)}` : ""}`;
+      }
+      case "error": {
+        const r4 = this.error.split(`
+`).map((c4, o3) => o3 === 0 ? `${import_picocolors.default.yellow(m3)}  ${import_picocolors.default.yellow(c4)}` : `   ${c4}`).join(`
+`);
+        return `${t2 + import_picocolors.default.yellow(a2)}  ${k3({ options: this.options, cursor: this.cursor, maxItems: s2.maxItems, style: i2 }).join(`
+${import_picocolors.default.yellow(a2)}  `)}
+${r4}
+`;
+      }
+      default:
+        return `${t2}${import_picocolors.default.cyan(a2)}  ${k3({ options: this.options, cursor: this.cursor, maxItems: s2.maxItems, style: i2 }).join(`
+${import_picocolors.default.cyan(a2)}  `)}
+${import_picocolors.default.cyan(m3)}
+`;
+    }
+  } }).prompt();
+};
 var we = (s2 = "") => {
   process.stdout.write(`${import_picocolors.default.gray(te)}  ${s2}
 `);
@@ -2904,8 +2979,8 @@ var v3 = { message: (s2 = "", { symbol: n2 = import_picocolors.default.gray(a2) 
 } };
 
 // cli/commands/install.ts
-import { join as join5, resolve as resolve2 } from "path";
-import { existsSync as existsSync5, lstatSync as lstatSync2, copyFileSync, unlinkSync } from "fs";
+import { join as join6 } from "path";
+import { existsSync as existsSync5 } from "fs";
 
 // cli/lib/manifest.ts
 import { readFileSync, readdirSync, statSync } from "fs";
@@ -2981,6 +3056,10 @@ function detectProviders(homeDir) {
   return KNOWN_PROVIDERS.filter((p2) => existsSync(join2(homeDir, p2.detectionPath)));
 }
 
+// cli/lib/apply-topics.ts
+import { copyFileSync, unlinkSync } from "fs";
+import { spawnSync } from "child_process";
+
 // cli/lib/symlink.ts
 import { existsSync as existsSync2, lstatSync, readlinkSync, symlinkSync, mkdirSync } from "fs";
 import { dirname } from "path";
@@ -3033,15 +3112,153 @@ function resolveTarget(target) {
   return resolve(expandTilde(target));
 }
 
+// cli/lib/apply-topics.ts
+import { join as join3 } from "path";
+function makeBackupPath(target) {
+  return `${target}.bak.${new Date().toISOString().replace(/[:.]/g, "-")}`;
+}
+function backupAndLink(src2, target) {
+  const backupPath = makeBackupPath(target);
+  copyFileSync(target, backupPath);
+  try {
+    unlinkSync(target);
+  } catch (e3) {
+    if (e3.code !== "ENOENT")
+      throw e3;
+  }
+  applySymlink(src2, target);
+  return backupPath;
+}
+async function applyTopics(manifests, providers, repoDir, options) {
+  const results = [];
+  for (const manifest of manifests) {
+    const topicDir = join3(repoDir, ".agents", manifest.topic);
+    for (const file of manifest.files) {
+      for (const provider of providers) {
+        const targetTemplate = file.targets[provider.id];
+        if (targetTemplate === null || targetTemplate === undefined) {
+          results.push({ status: "skipped", src: join3(topicDir, file.src), target: "", topic: manifest.topic, provider: provider.id });
+          continue;
+        }
+        const src2 = join3(topicDir, file.src);
+        const target = resolveTarget(targetTemplate);
+        const plan = planSymlink(src2, target, repoDir);
+        if (plan.status === "skip-already-linked") {
+          if (options.verbose)
+            v3.info(`  skip (already linked)  ${target}`);
+          results.push({ status: "skipped", src: src2, target, topic: manifest.topic, provider: provider.id });
+          continue;
+        }
+        if (plan.status === "create") {
+          if (options.dryRun) {
+            results.push({ status: "would-create", src: src2, target, topic: manifest.topic, provider: provider.id });
+            continue;
+          }
+          try {
+            applySymlink(src2, target);
+            const record = { topic: manifest.topic, provider: provider.id, symlinkPath: target, sourcePath: src2, installedAt: new Date().toISOString() };
+            results.push({ status: "linked", src: src2, target, topic: manifest.topic, provider: provider.id, record });
+          } catch (err) {
+            results.push({ status: "error", src: src2, target, topic: manifest.topic, provider: provider.id, error: err.message });
+          }
+          continue;
+        }
+        if (options.dryRun) {
+          results.push({ status: "would-conflict", src: src2, target, topic: manifest.topic, provider: provider.id });
+          continue;
+        }
+        if (options.conflictStrategy === "skip") {
+          results.push({ status: "skipped", src: src2, target, topic: manifest.topic, provider: provider.id });
+          continue;
+        }
+        if (options.conflictStrategy === "backup") {
+          try {
+            const backupPath = backupAndLink(src2, target);
+            const record = { topic: manifest.topic, provider: provider.id, symlinkPath: target, sourcePath: src2, backupPath, installedAt: new Date().toISOString() };
+            results.push({ status: "backed-up", src: src2, target, topic: manifest.topic, provider: provider.id, record, backupPath });
+          } catch (err) {
+            results.push({ status: "error", src: src2, target, topic: manifest.topic, provider: provider.id, error: err.message });
+          }
+          continue;
+        }
+        if (options.conflictStrategy === "overwrite") {
+          try {
+            try {
+              unlinkSync(target);
+            } catch (e3) {
+              if (e3.code !== "ENOENT")
+                throw e3;
+            }
+            applySymlink(src2, target);
+            const record = { topic: manifest.topic, provider: provider.id, symlinkPath: target, sourcePath: src2, installedAt: new Date().toISOString() };
+            results.push({ status: "linked", src: src2, target, topic: manifest.topic, provider: provider.id, record });
+          } catch (err) {
+            results.push({ status: "error", src: src2, target, topic: manifest.topic, provider: provider.id, error: err.message });
+          }
+          continue;
+        }
+        const action = await de({
+          message: `${target} already exists`,
+          options: [
+            { value: "skip", label: "Skip" },
+            { value: "overwrite", label: "Overwrite" },
+            { value: "backup", label: "Backup & replace" },
+            { value: "diff", label: "Show diff (then decide)" }
+          ]
+        });
+        if (BD(action) || action === "skip") {
+          results.push({ status: "skipped", src: src2, target, topic: manifest.topic, provider: provider.id });
+          continue;
+        }
+        if (action === "diff") {
+          spawnSync("diff", [target, src2], { stdio: "inherit" });
+          const ok = await me({ message: "Overwrite?" });
+          if (BD(ok) || !ok) {
+            results.push({ status: "skipped", src: src2, target, topic: manifest.topic, provider: provider.id });
+            continue;
+          }
+        }
+        try {
+          if (action === "backup" || action === "diff") {
+            const backupPath = backupAndLink(src2, target);
+            const record = { topic: manifest.topic, provider: provider.id, symlinkPath: target, sourcePath: src2, backupPath, installedAt: new Date().toISOString() };
+            results.push({ status: "backed-up", src: src2, target, topic: manifest.topic, provider: provider.id, record, backupPath });
+          } else {
+            try {
+              unlinkSync(target);
+            } catch (e3) {
+              if (e3.code !== "ENOENT")
+                throw e3;
+            }
+            applySymlink(src2, target);
+            const record = { topic: manifest.topic, provider: provider.id, symlinkPath: target, sourcePath: src2, installedAt: new Date().toISOString() };
+            results.push({ status: "linked", src: src2, target, topic: manifest.topic, provider: provider.id, record });
+          }
+        } catch (err) {
+          results.push({ status: "error", src: src2, target, topic: manifest.topic, provider: provider.id, error: err.message });
+        }
+      }
+    }
+  }
+  return results;
+}
+
 // cli/lib/cache.ts
 import { readFileSync as readFileSync2, writeFileSync } from "fs";
+function readSyncCache(cachePath) {
+  try {
+    return JSON.parse(readFileSync2(cachePath, "utf-8"));
+  } catch {
+    return null;
+  }
+}
 function writeSyncCache(cachePath, timestamp) {
   const cache = { lastSync: timestamp };
   writeFileSync(cachePath, JSON.stringify(cache, null, 2));
 }
 
 // cli/lib/install-manifest.ts
-import { readFileSync as readFileSync3, writeFileSync as writeFileSync2 } from "fs";
+import { readFileSync as readFileSync3, writeFileSync as writeFileSync2, renameSync } from "fs";
 function readInstallManifest(manifestPath) {
   try {
     return JSON.parse(readFileSync3(manifestPath, "utf-8"));
@@ -3050,20 +3267,22 @@ function readInstallManifest(manifestPath) {
   }
 }
 function writeInstallManifest(manifestPath, manifest) {
-  writeFileSync2(manifestPath, JSON.stringify(manifest, null, 2));
+  const tmp = manifestPath + ".tmp";
+  writeFileSync2(tmp, JSON.stringify(manifest, null, 2));
+  renameSync(tmp, manifestPath);
 }
 
 // cli/lib/env.ts
 import { existsSync as existsSync3, readFileSync as readFileSync4 } from "fs";
-import { join as join3 } from "path";
+import { join as join4 } from "path";
 import { homedir as homedir2 } from "os";
 var HOME = homedir2();
-var DEFAULT_REPO_DIR = join3(HOME, ".ai-config");
+var DEFAULT_REPO_DIR = join4(HOME, ".ai-config");
 function isLocalDevMode() {
   try {
     const cwd = process.cwd();
-    const pkg = JSON.parse(readFileSync4(join3(cwd, "package.json"), "utf-8"));
-    return pkg.name === "@n8io/ai-config" && existsSync3(join3(cwd, ".git"));
+    const pkg = JSON.parse(readFileSync4(join4(cwd, "package.json"), "utf-8"));
+    return pkg.name === "@n8io/ai-config" && existsSync3(join4(cwd, ".git"));
   } catch {
     return false;
   }
@@ -3077,19 +3296,22 @@ var installCommand = defineCommand({
   meta: { name: "install", description: "Install AI config via symlinks" },
   args: {
     provider: { type: "string", description: "Target a specific provider (claude, cursor)", default: "" },
-    "dry-run": { type: "boolean", description: "Preview changes without applying", default: false }
+    "dry-run": { type: "boolean", description: "Preview changes without applying", default: false },
+    yes: { type: "boolean", description: "Skip conflict prompts (use safe defaults)", default: false },
+    verbose: { type: "boolean", description: "Show all symlink operations including skipped", default: false }
   },
   async run({ args, rawArgs }) {
     const isDryRun = args["dry-run"];
-    const isInteractive = process.stdin.isTTY && !isDryRun;
+    const isYes = args["yes"];
+    const isVerbose = args["verbose"];
     const repoDir = getRepoDir();
-    const agentsDir = join5(repoDir, ".agents");
-    const syncCachePath = join5(repoDir, ".sync-cache");
-    const installManifestPath = join5(repoDir, ".install-manifest.json");
+    const agentsDir = join6(repoDir, ".agents");
+    const syncCachePath = join6(repoDir, ".sync-cache");
+    const installManifestPath = join6(repoDir, ".install-manifest.json");
     we("ai-config install");
     if (!isLocalDevMode()) {
       if (existsSync5(DEFAULT_REPO_DIR)) {
-        if (!existsSync5(join5(DEFAULT_REPO_DIR, ".git"))) {
+        if (!existsSync5(join6(DEFAULT_REPO_DIR, ".git"))) {
           v3.error(`${DEFAULT_REPO_DIR} exists but is not a git repository. Remove it and re-run.`);
           process.exit(1);
         }
@@ -3132,107 +3354,44 @@ var installCommand = defineCommand({
         return false;
       return true;
     });
-    const manifests = loadManifests(agentsDir);
-    const filteredManifests = requestedTopics.length > 0 ? manifests.filter((m4) => requestedTopics.includes(m4.topic)) : manifests;
-    const installedRecords = [];
-    for (const manifest of filteredManifests) {
-      const topicDir = join5(agentsDir, manifest.topic);
-      for (const file of manifest.files) {
-        for (const provider of providers) {
-          const targetTemplate = file.targets[provider.id];
-          if (!targetTemplate)
-            continue;
-          const src2 = resolve2(topicDir, file.src);
-          const target = resolveTarget(targetTemplate);
-          const plan = planSymlink(src2, target, repoDir);
-          if (plan.status === "skip-already-linked" || plan.status === "skip-null") {
-            v3.info(`  skip  ${target}`);
-            continue;
-          }
-          if (plan.status === "create") {
-            if (isDryRun) {
-              v3.info(`  would create  ${target} → ${src2}`);
-              continue;
-            }
-            try {
-              applySymlink(src2, target);
-              v3.success(`  linked  ${target}`);
-              installedRecords.push({ symlinkPath: target, sourcePath: src2, installedAt: new Date().toISOString() });
-            } catch (err) {
-              v3.error(`  failed  ${target}: ${err.message}`);
-            }
-            continue;
-          }
-          if (isDryRun) {
-            v3.warn(`  conflict  ${target} (already exists)`);
-            continue;
-          }
-          if (!isInteractive) {
-            v3.warn(`  skip (conflict)  ${target} — already exists, resolve manually`);
-            continue;
-          }
-          const action = await de({
-            message: `${target} already exists`,
-            options: [
-              { value: "skip", label: "Skip" },
-              { value: "overwrite", label: "Overwrite" },
-              { value: "backup", label: "Backup & replace" },
-              { value: "diff", label: "Show diff (then decide)" }
-            ]
-          });
-          if (BD(action)) {
-            fe2("Cancelled");
-            process.exit(0);
-          }
-          if (action === "skip") {
-            v3.info(`  skipped  ${target}`);
-            continue;
-          }
-          if (action === "diff") {
-            const { spawnSync: spawnSync2 } = await import("child_process");
-            spawnSync2("diff", [target, src2], { stdio: "inherit" });
-            const confirm2 = await me({ message: "Overwrite?" });
-            if (BD(confirm2) || !confirm2) {
-              v3.info(`  skipped  ${target}`);
-              continue;
-            }
-          }
-          let backupPath;
-          if (action === "backup" || action === "diff") {
-            backupPath = `${target}.bak.${new Date().toISOString().replace(/[:.]/g, "-")}`;
-            try {
-              lstatSync2(target);
-            } catch {
-              backupPath = undefined;
-            }
-            if (backupPath)
-              copyFileSync(target, backupPath);
-          }
-          try {
-            try {
-              unlinkSync(target);
-            } catch (err) {
-              if (err.code !== "ENOENT")
-                throw err;
-            }
-            applySymlink(src2, target);
-            v3.success(`  linked  ${target}${backupPath ? ` (backup: ${backupPath})` : ""}`);
-            installedRecords.push({
-              symlinkPath: target,
-              sourcePath: src2,
-              backupPath,
-              installedAt: new Date().toISOString()
-            });
-          } catch (err) {
-            v3.error(`  failed  ${target}: ${err.message}${backupPath ? ` (backup at ${backupPath})` : ""}`);
-          }
+    const allManifests = loadManifests(agentsDir);
+    const knownTopics = allManifests.map((m4) => m4.topic);
+    let manifests = allManifests;
+    if (requestedTopics.length > 0) {
+      for (const t2 of requestedTopics) {
+        if (!knownTopics.includes(t2)) {
+          v3.warn(`No manifest found for topic "${t2}". Available: ${knownTopics.join(", ")}`);
         }
       }
+      manifests = allManifests.filter((m4) => requestedTopics.includes(m4.topic));
     }
-    if (!isDryRun && installedRecords.length > 0) {
-      const existing = readInstallManifest(installManifestPath);
-      writeInstallManifest(installManifestPath, { records: [...existing.records, ...installedRecords] });
-      writeSyncCache(syncCachePath, new Date().toISOString());
+    const conflictStrategy = isDryRun ? "skip" : isYes ? "skip" : "ask";
+    const results = await applyTopics(manifests, providers, repoDir, {
+      dryRun: isDryRun,
+      verbose: isVerbose,
+      conflictStrategy
+    });
+    for (const r4 of results) {
+      if (r4.status === "linked")
+        v3.success(`  linked  ${r4.target}`);
+      else if (r4.status === "backed-up")
+        v3.success(`  linked  ${r4.target}  (backup: ${r4.backupPath})`);
+      else if (r4.status === "would-create")
+        v3.info(`  would create  ${r4.target} → ${r4.src}`);
+      else if (r4.status === "would-conflict")
+        v3.warn(`  conflict  ${r4.target}  (already exists)`);
+      else if (r4.status === "error")
+        v3.error(`  failed  ${r4.target}: ${r4.error}`);
+      else if (r4.status === "skipped" && isVerbose && r4.target)
+        v3.info(`  skip  ${r4.target}`);
+    }
+    if (!isDryRun) {
+      const newRecords = results.filter((r4) => r4.record).map((r4) => r4.record);
+      if (newRecords.length > 0) {
+        const existing = readInstallManifest(installManifestPath);
+        writeInstallManifest(installManifestPath, { records: [...existing.records, ...newRecords] });
+        writeSyncCache(syncCachePath, new Date().toISOString());
+      }
     }
     fe2(isDryRun ? "Dry run complete" : "Install complete");
   }
@@ -3240,15 +3399,15 @@ var installCommand = defineCommand({
 
 // cli/commands/update.ts
 import { unlinkSync as unlinkSync2 } from "fs";
-import { join as join6 } from "path";
+import { join as join7 } from "path";
 init_repo();
 var updateCommand = defineCommand({
   meta: { name: "update", description: "Pull latest config and re-apply symlinks" },
   async run() {
     we("ai-config update");
     const repoDir = getRepoDir();
-    const syncCachePath = join6(repoDir, ".sync-cache");
-    const installManifestPath = join6(repoDir, ".install-manifest.json");
+    const syncCachePath = join7(repoDir, ".sync-cache");
+    const installManifestPath = join7(repoDir, ".install-manifest.json");
     v3.step("Pulling latest from origin/main...");
     try {
       pullRepoOrThrow(repoDir);
@@ -3284,16 +3443,349 @@ var updateCommand = defineCommand({
   }
 });
 
+// cli/commands/setup.ts
+import { join as join8 } from "path";
+import { existsSync as existsSync6 } from "fs";
+var setupCommand = defineCommand({
+  meta: { name: "setup", description: "Interactive guided setup for new team members" },
+  args: {
+    provider: { type: "string", description: "Target a specific provider (claude, cursor)", default: "" }
+  },
+  async run({ args }) {
+    const repoDir = getRepoDir();
+    const agentsDir = join8(repoDir, ".agents");
+    const syncCachePath = join8(repoDir, ".sync-cache");
+    const installManifestPath = join8(repoDir, ".install-manifest.json");
+    we("ai-config setup");
+    if (!isLocalDevMode()) {
+      if (existsSync6(DEFAULT_REPO_DIR)) {
+        if (!existsSync6(join8(DEFAULT_REPO_DIR, ".git"))) {
+          v3.error(`${DEFAULT_REPO_DIR} exists but is not a git repository. Remove it and re-run.`);
+          process.exit(1);
+        }
+      } else {
+        v3.step(`Cloning ai-config repo to ${DEFAULT_REPO_DIR}...`);
+        const { cloneRepo: cloneRepo2 } = await Promise.resolve().then(() => (init_repo(), exports_repo));
+        try {
+          cloneRepo2(DEFAULT_REPO_DIR);
+          v3.success("Cloned successfully");
+        } catch (err) {
+          v3.error(`Clone failed: ${err.message}`);
+          process.exit(1);
+        }
+      }
+    }
+    if (!existsSync6(agentsDir)) {
+      v3.error(`No .agents/ directory found at ${repoDir}.`);
+      process.exit(1);
+    }
+    let providers;
+    if (args.provider) {
+      const found = KNOWN_PROVIDERS.find((p2) => p2.id === args.provider);
+      if (!found) {
+        v3.error(`Unknown provider: ${args.provider}. Known: ${KNOWN_PROVIDERS.map((p2) => p2.id).join(", ")}`);
+        process.exit(1);
+      }
+      providers = [found];
+      v3.info(`Using provider: ${found.name}`);
+    } else {
+      const detected = detectProviders(HOME);
+      if (detected.length === 0) {
+        v3.warn("No supported AI tools detected. Install Claude Code or Cursor first.");
+        fe2("Nothing to set up");
+        return;
+      }
+      if (detected.length === 1) {
+        providers = detected;
+        v3.info(`Detected: ${detected[0].name}`);
+      } else {
+        const chosen = await pe({
+          message: "Which AI tools do you use?",
+          options: detected.map((p2) => ({ value: p2.id, label: p2.name })),
+          initialValues: detected.map((p2) => p2.id)
+        });
+        if (BD(chosen)) {
+          fe2("Cancelled");
+          process.exit(0);
+        }
+        providers = KNOWN_PROVIDERS.filter((p2) => chosen.includes(p2.id));
+      }
+    }
+    const allManifests = loadManifests(agentsDir);
+    if (allManifests.length === 0) {
+      v3.warn("No topics found in .agents/.");
+      fe2("Nothing to install");
+      return;
+    }
+    const chosenTopics = await pe({
+      message: "Which topics do you want to install?",
+      options: allManifests.map((m4) => ({
+        value: m4.topic,
+        label: m4.topic,
+        hint: m4.description
+      })),
+      initialValues: allManifests.map((m4) => m4.topic)
+    });
+    if (BD(chosenTopics)) {
+      fe2("Cancelled");
+      process.exit(0);
+    }
+    const manifests = allManifests.filter((m4) => chosenTopics.includes(m4.topic));
+    if (manifests.length === 0) {
+      fe2("No topics selected");
+      process.exit(0);
+    }
+    v3.step("Previewing changes...");
+    const preview = await applyTopics(manifests, providers, repoDir, {
+      dryRun: true,
+      verbose: false,
+      conflictStrategy: "backup"
+    });
+    let hasChanges = false;
+    let lastTopic = "";
+    for (const r4 of preview) {
+      if (!r4.target)
+        continue;
+      if (r4.topic !== lastTopic) {
+        v3.message(`  [${r4.topic}]`);
+        lastTopic = r4.topic;
+      }
+      if (r4.status === "would-create") {
+        v3.info(`    would link  ${r4.target} → ${r4.src}`);
+        hasChanges = true;
+      } else if (r4.status === "would-conflict") {
+        v3.warn(`    would backup + replace  ${r4.target}`);
+        hasChanges = true;
+      }
+    }
+    if (!hasChanges) {
+      v3.info("Everything already up to date.");
+      fe2("Nothing to do");
+      return;
+    }
+    const ok = await me({ message: "Apply these changes?" });
+    if (BD(ok) || !ok) {
+      fe2("Cancelled");
+      process.exit(0);
+    }
+    const results = await applyTopics(manifests, providers, repoDir, {
+      dryRun: false,
+      verbose: false,
+      conflictStrategy: "backup"
+    });
+    for (const r4 of results) {
+      if (r4.status === "linked")
+        v3.success(`  linked  ${r4.target}`);
+      else if (r4.status === "backed-up")
+        v3.success(`  linked  ${r4.target}  (backup: ${r4.backupPath})`);
+      else if (r4.status === "error")
+        v3.error(`  failed  ${r4.target}: ${r4.error}`);
+    }
+    const newRecords = results.filter((r4) => r4.record).map((r4) => r4.record);
+    if (newRecords.length > 0) {
+      const existing = readInstallManifest(installManifestPath);
+      writeInstallManifest(installManifestPath, { records: [...existing.records, ...newRecords] });
+      writeSyncCache(syncCachePath, new Date().toISOString());
+    }
+    fe2("Setup complete. Run `ai-config update` to sync future changes.");
+  }
+});
+
+// cli/commands/list.ts
+import { join as join9 } from "path";
+function pad(s2, len) {
+  return s2.padEnd(len);
+}
+var listCommand = defineCommand({
+  meta: { name: "list", description: "List available topics and their install state" },
+  async run() {
+    const repoDir = getRepoDir();
+    const agentsDir = join9(repoDir, ".agents");
+    const installManifestPath = join9(repoDir, ".install-manifest.json");
+    const manifests = loadManifests(agentsDir);
+    if (manifests.length === 0) {
+      v3.warn("No topics found. Repo may not be cloned yet — run `ai-config setup` first.");
+      return;
+    }
+    const installManifest = readInstallManifest(installManifestPath);
+    const installedMap = new Map;
+    for (const record of installManifest.records) {
+      if (!record.topic || !record.provider)
+        continue;
+      if (!installedMap.has(record.topic))
+        installedMap.set(record.topic, new Set);
+      installedMap.get(record.topic).add(record.provider);
+    }
+    const header = `  ${pad("Topic", 12)}${pad("Description", 47)}Installed`;
+    const divider = `  ${pad("─────────", 12)}${pad("─────────────────────────────────────────────", 47)}──────────────`;
+    console.log(header);
+    console.log(divider);
+    for (const m4 of manifests) {
+      const providers = installedMap.get(m4.topic);
+      const installedStr = providers && providers.size > 0 ? [...providers].sort().join(", ") : "—";
+      const desc = m4.description ?? "";
+      console.log(`  ${pad(m4.topic, 12)}${pad(desc, 47)}${installedStr}`);
+    }
+  }
+});
+
+// cli/commands/uninstall.ts
+import { unlinkSync as unlinkSync3, existsSync as existsSync7, renameSync as renameSync2 } from "fs";
+import { join as join10 } from "path";
+var uninstallCommand = defineCommand({
+  meta: { name: "uninstall", description: "Remove installed symlinks" },
+  args: {
+    yes: { type: "boolean", description: "Skip all confirmation prompts", default: false }
+  },
+  async run({ args, rawArgs }) {
+    const isYes = args["yes"];
+    const repoDir = getRepoDir();
+    const installManifestPath = join10(repoDir, ".install-manifest.json");
+    const requestedTopics = rawArgs.filter((a3) => !a3.startsWith("-"));
+    we("ai-config uninstall");
+    const manifest = readInstallManifest(installManifestPath);
+    let toRemove = manifest.records.filter((r4) => r4.topic && r4.provider);
+    if (requestedTopics.length > 0) {
+      toRemove = toRemove.filter((r4) => requestedTopics.includes(r4.topic));
+    }
+    if (toRemove.length === 0) {
+      v3.warn("Nothing to uninstall.");
+      fe2("Done");
+      return;
+    }
+    if (!isYes) {
+      v3.message("The following symlinks will be removed:");
+      for (const r4 of toRemove) {
+        const displayPath = r4.symlinkPath.replace(process.env.HOME ?? "", "~");
+        v3.message(`  ${r4.provider}  ${r4.topic}  ${displayPath}`);
+      }
+      const ok = await me({ message: "Remove these symlinks?" });
+      if (BD(ok) || !ok) {
+        fe2("Cancelled");
+        process.exit(0);
+      }
+    }
+    for (const record of toRemove) {
+      let alreadyMissing = false;
+      try {
+        unlinkSync3(record.symlinkPath);
+      } catch (err) {
+        if (err.code === "ENOENT") {
+          alreadyMissing = true;
+        } else {
+          v3.error(`  failed to remove  ${record.symlinkPath}: ${err.message}`);
+          continue;
+        }
+      }
+      if (alreadyMissing) {
+        v3.info(`  already removed  ${record.symlinkPath}`);
+      } else {
+        v3.success(`  removed  ${record.symlinkPath}`);
+      }
+      if (record.backupPath && existsSync7(record.backupPath)) {
+        if (!isYes) {
+          const restore = await me({ message: `Restore backup at ${record.backupPath}?` });
+          if (!BD(restore) && restore) {
+            renameSync2(record.backupPath, record.symlinkPath);
+            v3.success(`  restored  ${record.symlinkPath}`);
+          } else {
+            v3.info(`  backup left at  ${record.backupPath}`);
+          }
+        } else {
+          v3.info(`  backup left at  ${record.backupPath}`);
+        }
+      }
+    }
+    const removeSet = new Set(toRemove.map((r4) => r4.symlinkPath));
+    const remaining = manifest.records.filter((r4) => !removeSet.has(r4.symlinkPath));
+    writeInstallManifest(installManifestPath, { records: remaining });
+    fe2("Uninstall complete");
+  }
+});
+
+// cli/commands/status.ts
+import { lstatSync as lstatSync2, readlinkSync as readlinkSync2, existsSync as existsSync8 } from "fs";
+import { join as join11 } from "path";
+function checkSymlink(record) {
+  if (!record.topic || !record.provider)
+    return "- missing";
+  try {
+    const stat = lstatSync2(record.symlinkPath);
+    if (!stat.isSymbolicLink())
+      return "! conflict";
+    const resolved = readlinkSync2(record.symlinkPath);
+    if (resolved !== record.sourcePath)
+      return "! conflict";
+    return existsSync8(record.sourcePath) ? "✓ linked" : "✗ broken";
+  } catch {
+    return "- missing";
+  }
+}
+function pad2(s2, len) {
+  return s2.padEnd(len);
+}
+var statusCommand = defineCommand({
+  meta: { name: "status", description: "Show installed symlinks and their health" },
+  async run() {
+    const repoDir = getRepoDir();
+    const installManifestPath = join11(repoDir, ".install-manifest.json");
+    const syncCachePath = join11(repoDir, ".sync-cache");
+    const agentsDir = join11(repoDir, ".agents");
+    const manifest = readInstallManifest(installManifestPath);
+    const records = manifest.records;
+    if (records.length === 0) {
+      v3.info("Nothing installed yet. Run `ai-config setup` to get started.");
+      process.exit(0);
+    }
+    const header = `  ${pad2("Provider", 10)}${pad2("Topic", 12)}${pad2("File", 42)}State`;
+    const divider = `  ${pad2("─────────", 10)}${pad2("─────────", 12)}${pad2("───────────────────────────────────────────", 42)}──────────`;
+    console.log(header);
+    console.log(divider);
+    let hasUnhealthy = false;
+    for (const record of records) {
+      const state = checkSymlink(record);
+      if (state !== "✓ linked")
+        hasUnhealthy = true;
+      const displayPath = record.symlinkPath.replace(process.env.HOME ?? "", "~");
+      const line = `  ${pad2(record.provider ?? "?", 10)}${pad2(record.topic ?? "?", 12)}${pad2(displayPath, 42)}${state}`;
+      console.log(line);
+    }
+    console.log("");
+    const syncCache = readSyncCache(syncCachePath);
+    if (syncCache) {
+      const date = new Date(syncCache.lastSync);
+      console.log(`  Last synced: ${date.toLocaleString()}`);
+    } else {
+      console.log("  Last synced: Never");
+    }
+    const installedTopics = new Set(records.filter((r4) => r4.topic).map((r4) => r4.topic));
+    const availableManifests = loadManifests(agentsDir);
+    const notInstalled = availableManifests.map((m4) => m4.topic).filter((t2) => !installedTopics.has(t2));
+    if (notInstalled.length > 0) {
+      console.log(`
+  Not installed: ${notInstalled.join(", ")}`);
+    }
+    process.exit(hasUnhealthy ? 1 : 0);
+  }
+});
+
 // cli/index.ts
 var main = defineCommand({
   meta: {
     name: "ai-config",
-    version: "0.1.0",
+    version: "0.2.0",
     description: "Provider-agnostic AI coding assistant config installer"
   },
   subCommands: {
     install: installCommand,
-    update: updateCommand
+    uninstall: uninstallCommand,
+    update: updateCommand,
+    setup: setupCommand,
+    list: listCommand,
+    status: statusCommand
   }
 });
 runMain(main);
+
+//# debugId=F4B020F2CEE4114464756E2164756E21
+//# sourceMappingURL=index.js.map
