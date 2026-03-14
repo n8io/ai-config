@@ -1,6 +1,6 @@
 {
   "name": "@n8io/ai-config",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Provider-agnostic AI coding assistant config installer",
   "type": "module",
   "bin": {
