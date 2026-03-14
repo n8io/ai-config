@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'fs'
+import { readFileSync, writeFileSync, renameSync } from 'fs'
 import type { InstallManifest, InstallRecord } from '../types'
 
 export function readInstallManifest(manifestPath: string): InstallManifest {
@@ -10,7 +10,9 @@ export function readInstallManifest(manifestPath: string): InstallManifest {
 }
 
 export function writeInstallManifest(manifestPath: string, manifest: InstallManifest): void {
-  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
+  const tmp = manifestPath + '.tmp'
+  writeFileSync(tmp, JSON.stringify(manifest, null, 2))
+  renameSync(tmp, manifestPath)
 }
 
 export function appendInstallRecord(
