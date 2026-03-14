@@ -82,6 +82,29 @@ describe('loadManifest', () => {
     }))
     expect(() => loadManifest(dir)).toThrow(/targets\.claude/)
   })
+
+  it('passes through description when present', () => {
+    const dir = join(tmp, 'with-desc')
+    mkdirSync(dir)
+    writeFileSync(join(dir, 'manifest.json'), JSON.stringify({
+      topic: 'rules',
+      description: 'Shared coding conventions',
+      files: []
+    }))
+    const manifest = loadManifest(dir)
+    expect(manifest.description).toBe('Shared coding conventions')
+  })
+
+  it('description is undefined when absent', () => {
+    const dir = join(tmp, 'no-desc')
+    mkdirSync(dir)
+    writeFileSync(join(dir, 'manifest.json'), JSON.stringify({
+      topic: 'rules',
+      files: []
+    }))
+    const manifest = loadManifest(dir)
+    expect(manifest.description).toBeUndefined()
+  })
 })
 
 describe('loadManifests', () => {
