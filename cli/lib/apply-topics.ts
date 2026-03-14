@@ -13,7 +13,9 @@ function makeBackupPath(target: string): string {
 function backupAndLink(src: string, target: string): string {
   const backupPath = makeBackupPath(target)
   copyFileSync(target, backupPath)
-  try { unlinkSync(target) } catch { /* ignore ENOENT */ }
+  try { unlinkSync(target) } catch (e) {
+    if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e
+  }
   applySymlink(src, target)
   return backupPath
 }
@@ -91,7 +93,9 @@ export async function applyTopics(
 
         if (options.conflictStrategy === 'overwrite') {
           try {
-            try { unlinkSync(target) } catch { /* ignore */ }
+            try { unlinkSync(target) } catch (e) {
+              if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e
+            }
             applySymlink(src, target)
             const record: InstallRecord = { topic: manifest.topic, provider: provider.id, symlinkPath: target, sourcePath: src, installedAt: new Date().toISOString() }
             results.push({ status: 'linked', src, target, topic: manifest.topic, provider: provider.id, record })
@@ -132,7 +136,9 @@ export async function applyTopics(
             const record: InstallRecord = { topic: manifest.topic, provider: provider.id, symlinkPath: target, sourcePath: src, backupPath, installedAt: new Date().toISOString() }
             results.push({ status: 'backed-up', src, target, topic: manifest.topic, provider: provider.id, record, backupPath })
           } else {
-            try { unlinkSync(target) } catch { /* ignore */ }
+            try { unlinkSync(target) } catch (e) {
+              if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e
+            }
             applySymlink(src, target)
             const record: InstallRecord = { topic: manifest.topic, provider: provider.id, symlinkPath: target, sourcePath: src, installedAt: new Date().toISOString() }
             results.push({ status: 'linked', src, target, topic: manifest.topic, provider: provider.id, record })
