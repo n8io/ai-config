@@ -11,7 +11,7 @@ export function readSyncCache(cachePath: string): SyncCache | null {
 
 export function writeSyncCache(cachePath: string, timestamp: string): void {
   const cache: SyncCache = { lastSync: timestamp }
-  writeFileSync(cachePath, JSON.stringify(cache))
+  writeFileSync(cachePath, JSON.stringify(cache, null, 2))
 }
 
 export function isSyncCacheStale(cache: SyncCache | null, maxAgeHours: number): boolean {

@@ -44,10 +44,11 @@ describe('isSyncCacheStale', () => {
 })
 
 describe('writeSyncCache', () => {
-  it('writes a valid JSON file', () => {
+  it('writes lastSync timestamp that round-trips correctly', () => {
     const path = join(tmp, '.sync-cache')
-    writeSyncCache(path, new Date().toISOString())
+    const ts = '2026-03-14T12:00:00.000Z'
+    writeSyncCache(path, ts)
     const cache = readSyncCache(path)
-    expect(cache).not.toBeNull()
+    expect(cache?.lastSync).toBe(ts)
   })
 })

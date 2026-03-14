@@ -1,4 +1,5 @@
 import { homedir } from 'os'
+import { resolve } from 'path'
 
 export function expandTilde(p: string): string {
   if (p.startsWith('~/') || p === '~') {
@@ -7,6 +8,7 @@ export function expandTilde(p: string): string {
   return p
 }
 
+/** Expands tilde and guarantees an absolute path. */
 export function resolveTarget(target: string): string {
-  return expandTilde(target)
+  return resolve(expandTilde(target))
 }

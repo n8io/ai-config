@@ -29,6 +29,9 @@ export function cloneRepo(destDir: string): void {
   const result = spawnSync('git', ['clone', REPO_URL, destDir], {
     encoding: 'utf-8',
   })
+  if (result.error) {
+    throw new GitError(`git clone failed: ${result.error.message}`, '')
+  }
   if (result.status !== 0) {
     throw new GitError('git clone failed', result.stderr ?? '')
   }
@@ -43,6 +46,9 @@ export function pullRepo(repoDir: string): { ok: boolean; error?: string } {
     cwd: repoDir,
     encoding: 'utf-8',
   })
+  if (result.error) {
+    return { ok: false, error: `git pull failed: ${result.error.message}` }
+  }
   if (result.status !== 0) {
     return { ok: false, error: result.stderr ?? 'git pull failed' }
   }

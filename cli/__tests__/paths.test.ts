@@ -18,6 +18,10 @@ describe('expandTilde', () => {
   it('expands bare ~ to home directory', () => {
     expect(expandTilde('~')).toBe(homedir())
   })
+
+  it('does not expand ~username paths (not supported)', () => {
+    expect(expandTilde('~username/path')).toBe('~username/path')
+  })
 })
 
 describe('resolveTarget', () => {
