@@ -2,6 +2,7 @@ import { defineCommand, runMain } from 'citty'
 import { installCommand } from './commands/install'
 import { updateCommand } from './commands/update'
 import { setupCommand } from './commands/setup'
+import { listCommand } from './commands/list'
 
 const main = defineCommand({
   meta: {
@@ -13,6 +14,7 @@ const main = defineCommand({
     install: installCommand,
     update: updateCommand,
     setup: setupCommand,
+    list: listCommand,
   },
 })
 
