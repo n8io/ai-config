@@ -2,7 +2,7 @@
 name: commit
 description: Commit message format with gitmojis
 argument-hint: [ticket-number]
-allowed-tools: Bash
+allowed-tools: Bash, AskUserQuestion
 model: haiku
 ---
 
@@ -14,6 +14,9 @@ Status:
 
 Branch:
 !`git branch --show-current`
+
+Recent commit tickets:
+!`git log --oneline -5 | grep -oE '[A-Z]+-[0-9]+' | head -1`
 
 ---
 
@@ -29,7 +32,11 @@ Generate a commit message in the imperative in the following format exactly:
 **Rules:**
 
 - **Type**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `ci`, or `build`
-- **Ticket**: Use `$ARGUMENTS` if provided. Otherwise try to extract from the branch name (e.g. `feature/PROJ-123-description` → `PROJ-123`). If no ticket found, omit the parentheses entirely.
+- **Ticket**: Determine the ticket using this priority order:
+  1. Use `$ARGUMENTS` if provided
+  2. Extract from the branch name (e.g. `feature/PROJ-123-description` → `PROJ-123`)
+  3. If neither of the above, use `AskUserQuestion` to ask the user for the ticket number. If a ticket was found in the "Recent commit tickets" output above, use it as the default in your question (e.g. "What ticket number? (default: PROJ-123)"). If no recent ticket found, ask without a default.
+  4. If the user provides no ticket number when asked, omit the parentheses entirely.
 - **Gitmoji**: Pick the single most fitting emoji from gitmoji.dev for the overall changeset. Common mappings:
   - ✨ new feature · 🐛 bug fix · ♻️ refactor · 📝 docs · 🎨 code structure
   - 🔧 config · 🚀 deploy · ✅ tests · 💄 UI/style · ⬆️ upgrade deps
@@ -38,7 +45,7 @@ Generate a commit message in the imperative in the following format exactly:
 - **Subject**: Sentence case, imperative mood, no trailing period. Entire header line ≤ 120 chars.
 - **Body**: Unordered list of individual changes in plain prose. Omit body if the subject fully captures everything.
 
-Commit immediately using:
+After determining the ticket (including asking if necessary), commit immediately using:
 ```bash
 git commit -m "$(cat <<'EOF'
 <message here>
