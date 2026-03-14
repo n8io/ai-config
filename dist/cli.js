@@ -940,10 +940,10 @@ __export(exports_repo, {
   GitError: () => GitError
 });
 import { spawnSync } from "child_process";
-import { existsSync as existsSync3 } from "fs";
-import { join as join3 } from "path";
+import { existsSync as existsSync4 } from "fs";
+import { join as join4 } from "path";
 function isGitRepo(dir) {
-  return existsSync3(join3(dir, ".git"));
+  return existsSync4(join4(dir, ".git"));
 }
 function cloneRepo(destDir) {
   const result = spawnSync("git", ["clone", REPO_URL, destDir], {
@@ -2904,9 +2904,8 @@ var v3 = { message: (s2 = "", { symbol: n2 = import_picocolors.default.gray(a2) 
 } };
 
 // cli/commands/install.ts
-import { join as join4, resolve as resolve2 } from "path";
-import { homedir as homedir2 } from "os";
-import { existsSync as existsSync4, lstatSync as lstatSync2, readFileSync as readFileSync4, copyFileSync, unlinkSync } from "fs";
+import { join as join5, resolve as resolve2 } from "path";
+import { existsSync as existsSync5, lstatSync as lstatSync2, copyFileSync, unlinkSync } from "fs";
 
 // cli/lib/manifest.ts
 import { readFileSync, readdirSync, statSync } from "fs";
@@ -3054,14 +3053,17 @@ function writeInstallManifest(manifestPath, manifest) {
   writeFileSync2(manifestPath, JSON.stringify(manifest, null, 2));
 }
 
-// cli/commands/install.ts
+// cli/lib/env.ts
+import { existsSync as existsSync3, readFileSync as readFileSync4 } from "fs";
+import { join as join3 } from "path";
+import { homedir as homedir2 } from "os";
 var HOME = homedir2();
-var DEFAULT_REPO_DIR = join4(HOME, ".ai-config");
+var DEFAULT_REPO_DIR = join3(HOME, ".ai-config");
 function isLocalDevMode() {
   try {
     const cwd = process.cwd();
-    const pkg = JSON.parse(readFileSync4(join4(cwd, "package.json"), "utf-8"));
-    return pkg.name === "@n8io/ai-config" && existsSync4(join4(cwd, ".git"));
+    const pkg = JSON.parse(readFileSync4(join3(cwd, "package.json"), "utf-8"));
+    return pkg.name === "@n8io/ai-config" && existsSync3(join3(cwd, ".git"));
   } catch {
     return false;
   }
@@ -3069,6 +3071,8 @@ function isLocalDevMode() {
 function getRepoDir() {
   return isLocalDevMode() ? process.cwd() : DEFAULT_REPO_DIR;
 }
+
+// cli/commands/install.ts
 var installCommand = defineCommand({
   meta: { name: "install", description: "Install AI config via symlinks" },
   args: {
@@ -3079,13 +3083,13 @@ var installCommand = defineCommand({
     const isDryRun = args["dry-run"];
     const isInteractive = process.stdin.isTTY && !isDryRun;
     const repoDir = getRepoDir();
-    const agentsDir = join4(repoDir, ".agents");
-    const syncCachePath = join4(repoDir, ".sync-cache");
-    const installManifestPath = join4(repoDir, ".install-manifest.json");
+    const agentsDir = join5(repoDir, ".agents");
+    const syncCachePath = join5(repoDir, ".sync-cache");
+    const installManifestPath = join5(repoDir, ".install-manifest.json");
     we("ai-config install");
     if (!isLocalDevMode()) {
-      if (existsSync4(DEFAULT_REPO_DIR)) {
-        if (!existsSync4(join4(DEFAULT_REPO_DIR, ".git"))) {
+      if (existsSync5(DEFAULT_REPO_DIR)) {
+        if (!existsSync5(join5(DEFAULT_REPO_DIR, ".git"))) {
           v3.error(`${DEFAULT_REPO_DIR} exists but is not a git repository. Remove it and re-run.`);
           process.exit(1);
         }
@@ -3101,7 +3105,7 @@ var installCommand = defineCommand({
         }
       }
     }
-    if (!existsSync4(agentsDir)) {
+    if (!existsSync5(agentsDir)) {
       v3.error(`No .agents/ directory found at ${repoDir}.`);
       process.exit(1);
     }
@@ -3132,7 +3136,7 @@ var installCommand = defineCommand({
     const filteredManifests = requestedTopics.length > 0 ? manifests.filter((m4) => requestedTopics.includes(m4.topic)) : manifests;
     const installedRecords = [];
     for (const manifest of filteredManifests) {
-      const topicDir = join4(agentsDir, manifest.topic);
+      const topicDir = join5(agentsDir, manifest.topic);
       for (const file of manifest.files) {
         for (const provider of providers) {
           const targetTemplate = file.targets[provider.id];
@@ -3235,32 +3239,47 @@ var installCommand = defineCommand({
 });
 
 // cli/commands/update.ts
-import { join as join5 } from "path";
-import { homedir as homedir3 } from "os";
+import { unlinkSync as unlinkSync2 } from "fs";
+import { join as join6 } from "path";
 init_repo();
-var HOME2 = homedir3();
-var REPO_DIR = join5(HOME2, ".ai-config");
-var SYNC_CACHE_PATH = join5(REPO_DIR, ".sync-cache");
-var INSTALL_MANIFEST_PATH = join5(REPO_DIR, ".install-manifest.json");
 var updateCommand = defineCommand({
   meta: { name: "update", description: "Pull latest config and re-apply symlinks" },
   async run() {
     we("ai-config update");
+    const repoDir = getRepoDir();
+    const syncCachePath = join6(repoDir, ".sync-cache");
+    const installManifestPath = join6(repoDir, ".install-manifest.json");
     v3.step("Pulling latest from origin/main...");
-    pullRepoOrThrow(REPO_DIR);
+    try {
+      pullRepoOrThrow(repoDir);
+    } catch (err) {
+      const msg = err instanceof GitError ? err.stderr || err.message : err.message;
+      v3.error(`Pull failed: ${msg}`);
+      process.exit(1);
+    }
     v3.success("Pulled latest changes");
     v3.step("Verifying symlinks...");
-    const installManifest = readInstallManifest(INSTALL_MANIFEST_PATH);
+    const installManifest = readInstallManifest(installManifestPath);
     const broken = verifySymlinks(installManifest.records);
     if (broken.length === 0) {
       v3.info("All symlinks intact");
     } else {
       for (const record of broken) {
-        applySymlink(record.sourcePath, record.symlinkPath);
-        v3.success(`  re-linked  ${record.symlinkPath}`);
+        try {
+          try {
+            unlinkSync2(record.symlinkPath);
+          } catch (err) {
+            if (err.code !== "ENOENT")
+              throw err;
+          }
+          applySymlink(record.sourcePath, record.symlinkPath);
+          v3.success(`  re-linked  ${record.symlinkPath}`);
+        } catch (err) {
+          v3.error(`  failed to re-link  ${record.symlinkPath}: ${err.message}`);
+        }
       }
     }
-    writeSyncCache(SYNC_CACHE_PATH, new Date().toISOString());
+    writeSyncCache(syncCachePath, new Date().toISOString());
     fe2("Update complete");
   }
 });
