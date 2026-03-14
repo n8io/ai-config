@@ -10,7 +10,8 @@
     "cli": "bun cli/index.ts",
     "build": "bun build ./cli/index.ts --outdir ./dist/ --target node --sourcemap && mv dist/index.js dist/cli.js && mv dist/index.js.map dist/cli.js.map",
     "test": "bun test",
-    "test:node": "node dist/cli.js --help"
+    "test:node": "node dist/cli.js --help",
+    "release": "bun run build && npm publish"
   },
   "dependencies": {
     "@clack/prompts": "^0.9.0",
