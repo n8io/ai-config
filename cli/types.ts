@@ -5,6 +5,7 @@ export interface ManifestFile {
 
 export interface Manifest {
   topic: string
+  description?: string
   files: ManifestFile[]
 }
 
@@ -26,6 +27,8 @@ export interface SymlinkPlan {
 }
 
 export interface InstallRecord {
+  topic: string
+  provider: string
   symlinkPath: string
   sourcePath: string
   backupPath?: string
@@ -34,6 +37,25 @@ export interface InstallRecord {
 
 export interface InstallManifest {
   records: InstallRecord[]
+}
+
+export type ApplyStatus =
+  | 'linked'         // symlink created successfully
+  | 'backed-up'      // conflicting file backed up then linked
+  | 'skipped'        // already linked or conflict-strategy=skip
+  | 'would-create'   // dryRun=true, would link
+  | 'would-conflict' // dryRun=true, conflict would be encountered
+  | 'error'          // failed
+
+export interface ApplyResult {
+  status: ApplyStatus
+  src: string
+  target: string
+  topic: string
+  provider: string
+  record?: InstallRecord   // present when status is 'linked' or 'backed-up'
+  backupPath?: string      // present when status is 'backed-up' or 'would-conflict'
+  error?: string           // present when status is 'error'
 }
 
 export interface SyncCache {

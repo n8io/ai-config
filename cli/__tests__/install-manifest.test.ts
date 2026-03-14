@@ -25,6 +25,8 @@ describe('appendInstallRecord', () => {
   it('creates the file if it does not exist and appends a record', () => {
     const path = join(tmp, 'install-manifest.json')
     appendInstallRecord(path, {
+      topic: 'hooks',
+      provider: 'claude',
       symlinkPath: '/home/.claude/hooks/tool.sh',
       sourcePath: '/home/.ai-config/.agents/hooks/tool.sh',
       installedAt: '2026-03-14T00:00:00.000Z',
@@ -38,11 +40,15 @@ describe('appendInstallRecord', () => {
   it('appends to existing records without overwriting', () => {
     const path = join(tmp, 'install-manifest.json')
     appendInstallRecord(path, {
+      topic: 'rules',
+      provider: 'claude',
       symlinkPath: '/a',
       sourcePath: '/b',
       installedAt: '2026-03-14T00:00:00.000Z',
     })
     appendInstallRecord(path, {
+      topic: 'hooks',
+      provider: 'claude',
       symlinkPath: '/c',
       sourcePath: '/d',
       installedAt: '2026-03-14T00:00:00.000Z',
@@ -55,6 +61,8 @@ describe('appendInstallRecord', () => {
   it('records backup path when provided', () => {
     const path = join(tmp, 'install-manifest.json')
     appendInstallRecord(path, {
+      topic: 'hooks',
+      provider: 'claude',
       symlinkPath: '/a',
       sourcePath: '/b',
       backupPath: '/a.bak.2026-03-14',
