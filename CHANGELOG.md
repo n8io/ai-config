@@ -1,5 +1,15 @@
 # @n8io/ai-config
 
+## 0.5.0
+
+### Minor Changes
+
+- e829d40: Test version package flow with minor version bump to verify release workflow.
+
+### Patch Changes
+
+- d48f2bc: Fix release workflow to only publish from Version Packages PR merge, preventing 403 errors from re-publishing already-published versions.
+
 ## 0.4.0
 
 ### Minor Changes
