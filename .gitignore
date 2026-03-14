@@ -1,3 +1,6 @@
 node_modules/
 .DS_Store
 .worktrees
+.install-manifest.json
+.sync-cache
+cache/
