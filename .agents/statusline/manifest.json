@@ -1,5 +1,6 @@
 {
   "topic": "statusline",
+  "description": "Custom status line display",
   "files": [
     {
       "src": "statusline-command.sh",

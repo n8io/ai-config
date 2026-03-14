@@ -1,5 +1,6 @@
 {
   "topic": "settings",
+  "description": "Claude Code settings baseline",
   "files": [
     {
       "src": "settings.json",

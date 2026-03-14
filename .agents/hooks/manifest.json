@@ -1,5 +1,6 @@
 {
   "topic": "hooks",
+  "description": "Prompt injection guard and session-start auto-sync",
   "files": [
     {
       "src": "prompt-injection-guard.sh",

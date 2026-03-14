@@ -1,6 +1,6 @@
 {
   "name": "@n8io/ai-config",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Provider-agnostic AI coding assistant config installer",
   "type": "module",
   "bin": {
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "cli": "bun cli/index.ts",
-    "build": "bun build cli/index.ts --outfile dist/cli.js --target node --sourcemap",
+    "build": "bun build ./cli/index.ts --outdir ./dist/ --target node --sourcemap && mv dist/index.js dist/cli.js && mv dist/index.js.map dist/cli.js.map",
     "test": "bun test",
     "test:node": "node dist/cli.js --help"
   },

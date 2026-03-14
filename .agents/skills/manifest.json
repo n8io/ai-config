@@ -1,5 +1,6 @@
 {
   "topic": "skills",
+  "description": "Shared slash commands (commit, etc.)",
   "files": [
     {
       "src": "commit",

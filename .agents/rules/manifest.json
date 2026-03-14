@@ -1,5 +1,6 @@
 {
   "topic": "rules",
+  "description": "Shared coding conventions (AGENTS.md) for all AI tools",
   "files": [
     {
       "src": "AGENTS.md",
