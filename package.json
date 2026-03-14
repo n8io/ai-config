@@ -8,7 +8,7 @@
   },
   "scripts": {
     "cli": "bun cli/index.ts",
-    "build": "bun build ./cli/index.ts --outdir ./dist/ --target node --sourcemap && mv dist/index.js dist/cli.js && mv dist/index.js.map dist/cli.js.map",
+    "build": "bun build ./cli/index.ts --outdir ./dist/ --target node --sourcemap && { printf '#!/usr/bin/env node\\n'; cat dist/index.js; } > dist/cli.js && mv dist/index.js.map dist/cli.js.map && rm dist/index.js",
     "test": "bun test",
     "test:node": "node dist/cli.js --help",
     "release": "bun run build && npm publish"
