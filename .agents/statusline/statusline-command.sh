@@ -58,9 +58,31 @@ if [ -n "$git_dir" ]; then
   fi
 fi
 
+CACHE_DIR="${HOME}/.ai-config/cache"
+mkdir -p "$CACHE_DIR"
+
+# PR link — cached per branch for 5 minutes
+pr_info=""
+if [ -n "$branch" ]; then
+  ${now_ts+:} now_ts=$(date +%s)
+  safe_branch=$(printf '%s' "$branch" | tr '/' '-' | tr -cd '[:alnum:]-_.')
+  PR_CACHE="${CACHE_DIR}/pr-${safe_branch}"
+  if [ ! -f "$PR_CACHE" ] || [ $(( now_ts - $(stat -f %m "$PR_CACHE" 2>/dev/null || echo 0) )) -gt 300 ]; then
+    pr_out=$(cd "$cwd" && gh pr view --json number,url -q '"\(.number)|\(.url)"' 2>/dev/null || echo "")
+    printf '%s' "$pr_out" > "$PR_CACHE"
+  else
+    pr_out=$(cat "$PR_CACHE" 2>/dev/null)
+  fi
+  pr_num="${pr_out%%|*}"
+  pr_url="${pr_out#*|}"
+  if [ -n "$pr_num" ] && [ "$pr_num" != "null" ]; then
+    pr_info=$'\033]8;;'"${pr_url}"$'\033\\'"${CYAN}#${pr_num}${RESET}"$'\033]8;;\033\\'
+  fi
+fi
+
 # Node.js version — only in Node project directories, cached for 1 hour
 node_info=""
-NODE_VER_CACHE="${HOME}/.claude/node-ver-cache"
+NODE_VER_CACHE="${CACHE_DIR}/node-ver-cache"
 if [ -f "${cwd}/.nvmrc" ] || [ -f "${cwd}/.node-version" ] || [ -f "${cwd}/package.json" ]; then
   now_ts=$(date +%s)
   if [ ! -f "$NODE_VER_CACHE" ] || [ $(( now_ts - $(stat -f %m "$NODE_VER_CACHE" 2>/dev/null || echo 0) )) -gt 3600 ]; then
@@ -78,9 +100,9 @@ fi
 
 # 5-hour usage + plan name from Claude.ai API
 five_h_info=""
-FIVE_H_CACHE="${HOME}/.claude/5h-cost-cache"
-FIVE_H_RESET_CACHE="${HOME}/.claude/5h-reset-cache"
-PLAN_CACHE="${HOME}/.claude/plan-name-cache"
+FIVE_H_CACHE="${CACHE_DIR}/5h-cost-cache"
+FIVE_H_RESET_CACHE="${CACHE_DIR}/5h-reset-cache"
+PLAN_CACHE="${CACHE_DIR}/plan-name-cache"
 CLAUDE_SESSION="${HOME}/.claude/claude-ai-session.json"
 ${now_ts+:} now_ts=$(date +%s)  # reuse if already set above
 
@@ -237,6 +259,7 @@ PIPE="${GRAY} | ${RESET}"
 segments=()
 [ -n "$CLAUDE_BOX" ]   && segments+=("🔐")
 [ -n "$git_info" ]     && segments+=("$git_info")
+[ -n "$pr_info" ]      && segments+=("$pr_info")
 [ -n "$node_info" ]    && segments+=("$node_info")
 [ -n "$plan_info" ]    && segments+=("$plan_info")
 [ -n "$five_h_info" ]  && segments+=("$five_h_info")

@@ -1,6 +1,6 @@
 {
   "topic": "agents",
-  "description": "Shared Claude Code subagents (code-style-alphasort, etc.)",
+  "description": "Shared subagents (code-style-alphasort, etc.)",
   "files": [
     {
       "src": "code-style-alphasort.md",
