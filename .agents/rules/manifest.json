@@ -4,8 +4,8 @@
     {
       "src": "AGENTS.md",
       "targets": {
-        "claude": "~/.claude/CLAUDE.md",
-        "cursor": "~/.cursor/rules/AGENTS.md"
+        "claude": "~/.claude/AGENTS.md",
+        "cursor": "~/.cursor/AGENTS.md"
       }
     }
   ]
