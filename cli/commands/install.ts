@@ -1,7 +1,6 @@
 import { defineCommand } from 'citty'
 import { intro, outro, log, select, confirm, isCancel } from '@clack/prompts'
 import { join, resolve } from 'path'
-import { homedir } from 'os'
 import { existsSync, lstatSync, readFileSync, copyFileSync, unlinkSync } from 'fs'
 import { loadManifests } from '../lib/manifest'
 import { detectProviders, KNOWN_PROVIDERS } from '../lib/providers'
@@ -9,30 +8,8 @@ import { planSymlink, applySymlink } from '../lib/symlink'
 import { resolveTarget } from '../lib/paths'
 import { writeSyncCache } from '../lib/cache'
 import { readInstallManifest, writeInstallManifest } from '../lib/install-manifest'
+import { HOME, DEFAULT_REPO_DIR, isLocalDevMode, getRepoDir } from '../lib/env'
 import type { Provider, InstallRecord } from '../types'
-
-const HOME = homedir()
-const DEFAULT_REPO_DIR = join(HOME, '.ai-config')
-
-/**
- * Detect if running directly from the source repo (bun run cli).
- * Checks that CWD has both a package.json named @n8io/ai-config AND a .git directory.
- * Running via bunx/npx from inside the repo does NOT trigger this — those executions
- * spawn a separate process whose CWD is not necessarily the repo root.
- */
-function isLocalDevMode(): boolean {
-  try {
-    const cwd = process.cwd()
-    const pkg = JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf-8')) as { name?: string }
-    return pkg.name === '@n8io/ai-config' && existsSync(join(cwd, '.git'))
-  } catch {
-    return false
-  }
-}
-
-function getRepoDir(): string {
-  return isLocalDevMode() ? process.cwd() : DEFAULT_REPO_DIR
-}
 
 export const installCommand = defineCommand({
   meta: { name: 'install', description: 'Install AI config via symlinks' },
