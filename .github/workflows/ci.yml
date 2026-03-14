@@ -28,3 +28,23 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: Check for changeset
         run: bunx changeset status --since origin/main
+
+  checks-passed:
+    name: Checks Passed
+    needs: [test, changeset-check]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: All checks passed or skipped
+        run: |
+          test="${{ needs.test.result }}"
+          changeset="${{ needs.changeset-check.result }}"
+          if [[ "$test" != "success" && "$test" != "skipped" ]]; then
+            echo "Test failed: $test"
+            exit 1
+          fi
+          if [[ "$changeset" != "success" && "$changeset" != "skipped" ]]; then
+            echo "Changeset check failed: $changeset"
+            exit 1
+          fi
+          echo "All checks passed"
