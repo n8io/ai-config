@@ -2,6 +2,7 @@ import { defineCommand } from 'citty'
 import { intro, outro, log } from '@clack/prompts'
 import { join } from 'path'
 import { homedir } from 'os'
+import { unlinkSync } from 'fs'
 import { applySymlink, verifySymlinks } from '../lib/symlink'
 import { writeSyncCache } from '../lib/cache'
 import { readInstallManifest } from '../lib/install-manifest'
@@ -29,8 +30,16 @@ export const updateCommand = defineCommand({
       log.info('All symlinks intact')
     } else {
       for (const record of broken) {
-        applySymlink(record.sourcePath, record.symlinkPath)
-        log.success(`  re-linked  ${record.symlinkPath}`)
+        try {
+          // Unlink first — the symlink may point to a wrong target (EEXIST without this)
+          try { unlinkSync(record.symlinkPath) } catch (err) {
+            if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
+          }
+          applySymlink(record.sourcePath, record.symlinkPath)
+          log.success(`  re-linked  ${record.symlinkPath}`)
+        } catch (err) {
+          log.error(`  failed to re-link  ${record.symlinkPath}: ${(err as Error).message}`)
+        }
       }
     }
 
