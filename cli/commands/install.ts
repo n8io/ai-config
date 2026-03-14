@@ -8,7 +8,7 @@ import { detectProviders, KNOWN_PROVIDERS } from '../lib/providers'
 import { planSymlink, applySymlink } from '../lib/symlink'
 import { resolveTarget } from '../lib/paths'
 import { writeSyncCache } from '../lib/cache'
-import { appendInstallRecord } from '../lib/install-manifest'
+import { readInstallManifest, writeInstallManifest } from '../lib/install-manifest'
 import type { Provider, InstallRecord } from '../types'
 
 const HOME = homedir()
@@ -96,10 +96,12 @@ export const installCommand = defineCommand({
     }
 
     // Filter topics from rawArgs (positional args after the subcommand name).
-    // Citty passes only the args after 'install' to this handler, so rawArgs
-    // for `ai-config install skills hooks` is ['skills', 'hooks'] — no need
-    // to strip the subcommand name itself.
-    const requestedTopics = rawArgs.filter(a => !a.startsWith('-'))
+    // Skip flags (--dry-run) and their values (value immediately after --provider).
+    const requestedTopics = rawArgs.filter((a, i, arr) => {
+      if (a.startsWith('-')) return false
+      if (arr[i - 1] === '--provider') return false  // skip --provider's value
+      return true
+    })
 
     // Load manifests
     const manifests = loadManifests(agentsDir)
@@ -130,9 +132,13 @@ export const installCommand = defineCommand({
               log.info(`  would create  ${target} → ${src}`)
               continue
             }
-            applySymlink(src, target)
-            log.success(`  linked  ${target}`)
-            installedRecords.push({ symlinkPath: target, sourcePath: src, installedAt: new Date().toISOString() })
+            try {
+              applySymlink(src, target)
+              log.success(`  linked  ${target}`)
+              installedRecords.push({ symlinkPath: target, sourcePath: src, installedAt: new Date().toISOString() })
+            } catch (err) {
+              log.error(`  failed  ${target}: ${(err as Error).message}`)
+            }
             continue
           }
 
@@ -175,23 +181,30 @@ export const installCommand = defineCommand({
             if (backupPath) copyFileSync(target, backupPath)
           }
 
-          try { unlinkSync(target) } catch {}
-          applySymlink(src, target)
-          log.success(`  linked  ${target}${backupPath ? ` (backup: ${backupPath})` : ''}`)
-          installedRecords.push({
-            symlinkPath: target,
-            sourcePath: src,
-            backupPath,
-            installedAt: new Date().toISOString(),
-          })
+          try {
+            try {
+              unlinkSync(target)
+            } catch (err) {
+              if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
+            }
+            applySymlink(src, target)
+            log.success(`  linked  ${target}${backupPath ? ` (backup: ${backupPath})` : ''}`)
+            installedRecords.push({
+              symlinkPath: target,
+              sourcePath: src,
+              backupPath,
+              installedAt: new Date().toISOString(),
+            })
+          } catch (err) {
+            log.error(`  failed  ${target}: ${(err as Error).message}${backupPath ? ` (backup at ${backupPath})` : ''}`)
+          }
         }
       }
     }
 
     if (!isDryRun && installedRecords.length > 0) {
-      for (const record of installedRecords) {
-        appendInstallRecord(installManifestPath, record)
-      }
+      const existing = readInstallManifest(installManifestPath)
+      writeInstallManifest(installManifestPath, { records: [...existing.records, ...installedRecords] })
       writeSyncCache(syncCachePath, new Date().toISOString())
     }
 

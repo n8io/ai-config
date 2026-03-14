@@ -9,11 +9,15 @@ export function readInstallManifest(manifestPath: string): InstallManifest {
   }
 }
 
+export function writeInstallManifest(manifestPath: string, manifest: InstallManifest): void {
+  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
+}
+
 export function appendInstallRecord(
   manifestPath: string,
   record: InstallRecord
 ): void {
   const manifest = readInstallManifest(manifestPath)
   manifest.records.push(record)
-  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
+  writeInstallManifest(manifestPath, manifest)
 }
