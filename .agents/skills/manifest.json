@@ -6,14 +6,14 @@
       "src": "commit",
       "targets": {
         "claude": "~/.claude/skills/commit",
-        "cursor": null
+        "cursor": "~/.cursor/skills/commit"
       }
     },
     {
       "src": "jira",
       "targets": {
         "claude": "~/.claude/skills/jira",
-        "cursor": null
+        "cursor": "~/.cursor/skills/jira"
       }
     }
   ]
