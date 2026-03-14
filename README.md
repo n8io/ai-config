@@ -75,15 +75,31 @@ ai-config uninstall --yes        # skip prompts (backups kept, not restored)
 
 ## 🔧 How it works
 
-```
-~/.ai-config/                  (git repo)
-  .agents/
-    rules/
-      AGENTS.md        ──symlink──▶  ~/.claude/AGENTS.md
-    hooks/
-      session-start.sh ──symlink──▶  ~/.claude/hooks/session-start.sh
-    settings/
-      settings.json    ──symlink──▶  ~/.claude/settings.json
+```mermaid
+flowchart TD
+    GH["github.com/n8io/ai-config"]
+    REPO["~/.ai-config/\n(git repo)"]
+    AGENTS[".agents/\ntopics"]
+
+    GH -->|"git clone / pull"| REPO
+    REPO --> AGENTS
+
+    AGENTS --> R["rules/\nAGENTS.md"]
+    AGENTS --> H["hooks/\nsession-start.sh"]
+    AGENTS --> S["settings/\nsettings.json"]
+    AGENTS --> SK["skills/\n*.md"]
+    AGENTS --> SL["statusline/\nconfig.json"]
+
+    R -->|symlink| CC["~/.claude/\nClaude Code"]
+    H -->|symlink| CC
+    S -->|symlink| CC
+    SK -->|symlink| CC
+    SL -->|symlink| CC
+
+    R -->|symlink| CU["~/.cursor/\nCursor"]
+
+    MANIFEST["~/.ai-config/\n.install-manifest.json"]
+    AGENTS -->|tracks| MANIFEST
 ```
 
 An **install manifest** (`~/.ai-config/.install-manifest.json`) tracks every symlink so `update` and `uninstall` know what's managed.
